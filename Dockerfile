@@ -2,14 +2,22 @@ FROM php:8.2-cli
 
 WORKDIR /app
 
+# system dependencies + php extensions
 RUN apt-get update && apt-get install -y \
-    zip unzip git curl libzip-dev \
-    && docker-php-ext-install pdo pdo_mysql
+    git curl zip unzip \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    libzip-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql zip
 
+# copy project
 COPY . .
 
+# install composer
 RUN curl -sS https://getcomposer.org/installer | php
-RUN php composer.phar install
+
+# install dependencies
+RUN php composer.phar install --no-dev --optimize-autoloader
 
 EXPOSE 10000
 
